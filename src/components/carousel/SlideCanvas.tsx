@@ -134,7 +134,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               src={logo}
               alt="logo"
               crossOrigin="anonymous"
-              style={{ height: 32, width: "auto", opacity: 0.8, filter: logoFilter, objectFit: "contain" }}
+              style={{ height: 90, width: "auto", opacity: 1, filter: logoFilter, objectFit: "contain" }}
             />
           ) : (
             <span />
