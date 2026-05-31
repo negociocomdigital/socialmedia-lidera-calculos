@@ -22,6 +22,7 @@ export const Route = createFileRoute("/")({
 
 const VARIANTS_DARK: SlideVariant[] = ["cover", "light", "dark", "light", "cta"];
 const VARIANTS_LIGHT: SlideVariant[] = ["cover", "dark", "light", "dark", "cta"];
+const VARIANTS_GOLD: SlideVariant[] = ["cta", "dark", "light", "dark", "cta-dark"];
 
 const SAMPLE_JSON = JSON.stringify(
   {
@@ -146,7 +147,13 @@ function Index() {
                 key={i}
                 index={i}
                 total={5}
-                variant={(state.palette === "light" ? VARIANTS_LIGHT : VARIANTS_DARK)[i]}
+                variant={
+                  state.palette === "light"
+                    ? VARIANTS_LIGHT[i]
+                    : state.palette === "gold"
+                      ? VARIANTS_GOLD[i]
+                      : VARIANTS_DARK[i]
+                }
                 data={sl}
                 coverImage={i === 0 ? state.coverImage : null}
                 logo={state.logo}
