@@ -10,7 +10,7 @@ export type CarouselState = {
   theme: string;
   coverImage: string | null;
   logo: string | null;
-  palette: "dark" | "light";
+  palette: "dark" | "light" | "gold";
   slides: SlideData[];
 };
 

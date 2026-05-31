@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import type { SlideData } from "@/lib/carouselTypes";
 
-export type SlideVariant = "cover" | "dark" | "light" | "cta";
+export type SlideVariant = "cover" | "dark" | "light" | "cta" | "cta-dark";
 
 type Props = {
   index: number; // 0..4
