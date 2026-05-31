@@ -1,92 +1,65 @@
-const HTML2CANVAS_URL =
-  "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-const JSZIP_URL =
-  "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
-
-function loadScript(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[data-src="${src}"]`)) return resolve();
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    s.dataset.src = src;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error(`Failed to load ${src}`));
-    document.head.appendChild(s);
-  });
+/* eslint-disable @typescript-eslint/no-explicit-any */
+declare global {
+  interface Window {
+    html2canvas: any;
+    JSZip: any;
+  }
 }
 
-type Html2Canvas = (
-  el: HTMLElement,
-  opts?: Record<string, unknown>,
-) => Promise<HTMLCanvasElement>;
-
-async function getHtml2Canvas(): Promise<Html2Canvas> {
-  await loadScript(HTML2CANVAS_URL);
-  const fn = (window as unknown as { html2canvas?: Html2Canvas }).html2canvas;
-  if (!fn) throw new Error("html2canvas indisponível");
-  return fn;
+async function waitForLib(name: "html2canvas" | "JSZip", timeoutMs = 8000) {
+  const start = Date.now();
+  while (!(window as any)[name]) {
+    if (Date.now() - start > timeoutMs) throw new Error(`${name} não carregou`);
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return (window as any)[name];
 }
 
-type JSZipCtor = new () => {
-  file: (name: string, data: Blob) => void;
-  generateAsync: (opts: { type: "blob" }) => Promise<Blob>;
-};
-
-async function getJSZip(): Promise<JSZipCtor> {
-  await loadScript(JSZIP_URL);
-  const Z = (window as unknown as { JSZip?: JSZipCtor }).JSZip;
-  if (!Z) throw new Error("JSZip indisponível");
-  return Z;
-}
-
-async function captureBlob(node: HTMLElement): Promise<Blob> {
-  const html2canvas = await getHtml2Canvas();
-  const canvas = await html2canvas(node, {
-    width: 1080,
-    height: 1440,
-    windowWidth: 1080,
-    windowHeight: 1440,
-    scale: 1,
+async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
+  const html2canvas = await waitForLib("html2canvas");
+  return await html2canvas(slideElement, {
+    scale: 2,
     useCORS: true,
+    allowTaint: true,
     backgroundColor: null,
+    width: slideElement.offsetWidth,
+    height: slideElement.offsetHeight,
     logging: false,
   });
-  return await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/png");
-  });
 }
 
-function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+function downloadFromUrl(url: string, filename: string) {
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
-export async function exportSlide(node: HTMLElement, filename: string) {
-  const blob = await captureBlob(node);
-  triggerDownload(blob, filename);
+export async function exportSlide(slideElement: HTMLElement, filename: string) {
+  const canvas = await capture(slideElement);
+  downloadFromUrl(canvas.toDataURL("image/png"), filename);
 }
 
 export async function exportSlidesAsZip(
-  nodes: (HTMLElement | null)[],
+  _nodes: (HTMLElement | null)[],
   zipName = "lidera-carrossel.zip",
 ) {
-  const Zip = await getJSZip();
-  const zip = new Zip();
-  for (let i = 0; i < nodes.length; i++) {
-    const n = nodes[i];
-    if (!n) continue;
-    const blob = await captureBlob(n);
-    zip.file(`slide-${String(i + 1).padStart(2, "0")}.png`, blob);
+  const JSZip = await waitForLib("JSZip");
+  const zip = new JSZip();
+  const slides = document.querySelectorAll<HTMLElement>(".slide-preview");
+  for (let i = 0; i < slides.length; i++) {
+    const canvas = await capture(slides[i]);
+    const blob: Blob = await new Promise((resolve) =>
+      canvas.toBlob((b: Blob | null) => resolve(b as Blob), "image/png"),
+    );
+    zip.file(`slide-0${i + 1}.png`, blob);
   }
-  const out = await zip.generateAsync({ type: "blob" });
-  triggerDownload(out, zipName);
+  const zipBlob: Blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(zipBlob);
+  downloadFromUrl(url, zipName);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
