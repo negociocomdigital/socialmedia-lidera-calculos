@@ -122,7 +122,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             color: c.muted,
           }}
         >
-          {logo ? (
+          {logo && variant !== "cta" ? (
             <img
               src={logo}
               alt="logo"
@@ -229,6 +229,28 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
           )}
         </div>
       </div>
+
+      {/* CTA: large centered logo at bottom */}
+      {variant === "cta" && logo && (
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: PAD + 60,
+            display: "flex",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <img
+            src={logo}
+            alt="logo"
+            crossOrigin="anonymous"
+            style={{ height: 56, width: "auto", opacity: 1, filter: "brightness(0)", objectFit: "contain" }}
+          />
+        </div>
+      )}
     </div>
   );
 });
