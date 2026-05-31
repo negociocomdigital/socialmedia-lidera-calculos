@@ -6,7 +6,7 @@ import type { SlideVariant } from "@/components/carousel/SlideCanvas";
 import { DEFAULT_STATE, type CarouselState, type SlideData } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { exportSlidesAsZip, exportSlide } from "@/lib/exportSlide";
+import { exportSlidesAsZip } from "@/lib/exportSlide";
 
 export const Route = createFileRoute("/")({
   head: () => ({
