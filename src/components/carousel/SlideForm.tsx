@@ -62,6 +62,32 @@ export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, 
       </div>
 
       <div className="space-y-2">
+        <Label>Começar com:</Label>
+        <div className="grid grid-cols-2 gap-3">
+          {(["dark", "light"] as const).map((p) => {
+            const selected = state.palette === p;
+            const isDark = p === "dark";
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setState((s) => ({ ...s, palette: p }))}
+                className="rounded-xl px-4 py-5 text-center text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: isDark ? "#0D1B3E" : "#F7F5F0",
+                  color: isDark ? "#FFFFFF" : "#0D1B3E",
+                  border: `2px solid ${selected ? "#C9A84C" : "transparent"}`,
+                  boxShadow: selected ? "0 0 0 1px rgba(201,168,76,0.2)" : "0 0 0 1px rgba(13,27,62,0.1)",
+                }}
+              >
+                {isDark ? "Escuro" : "Claro"}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-2">
         <Label>Logo da empresa</Label>
         <input
           ref={logoRef}
