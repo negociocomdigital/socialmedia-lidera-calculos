@@ -10,6 +10,7 @@ export type CarouselState = {
   theme: string;
   coverImage: string | null;
   logo: string | null;
+  palette: "dark" | "light";
   slides: SlideData[];
 };
 
@@ -24,6 +25,7 @@ export const DEFAULT_STATE: CarouselState = {
   theme: "",
   coverImage: null,
   logo: null,
+  palette: "dark",
   slides: [
     { tag: "Insight", titleLine1: "Decisões financeiras", titleLine2: "com clareza", body: "Um carrossel sobre como cálculos sólidos protegem o seu negócio.", },
     { tag: "Contexto", titleLine1: "O problema", titleLine2: "silencioso", body: "Empresas perdem margem porque não medem onde estão sangrando." },

@@ -6,7 +6,7 @@ import type { SlideVariant } from "@/components/carousel/SlideCanvas";
 import { DEFAULT_STATE, type CarouselState, type SlideData } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { exportSlide, wait } from "@/lib/exportSlide";
+import { exportSlidesAsZip } from "@/lib/exportSlide";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,7 +20,8 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const VARIANTS: SlideVariant[] = ["cover", "light", "dark", "light", "cta"];
+const VARIANTS_DARK: SlideVariant[] = ["cover", "light", "dark", "light", "cta"];
+const VARIANTS_LIGHT: SlideVariant[] = ["cover", "dark", "light", "dark", "cta"];
 
 const SAMPLE_JSON = JSON.stringify(
   {
@@ -78,12 +79,7 @@ function Index() {
   const exportAll = async () => {
     setExportingAll(true);
     try {
-      for (let i = 0; i < slideRefs.current.length; i++) {
-        const node = slideRefs.current[i];
-        if (!node) continue;
-        await exportSlide(node, `lidera-slide-${i + 1}.png`);
-        await wait(200);
-      }
+      await exportSlidesAsZip(slideRefs.current, "lidera-carrossel.zip");
     } finally {
       setExportingAll(false);
     }
@@ -139,13 +135,18 @@ function Index() {
               {exportingAll ? "Exportando..." : "Exportar todos os slides"}
             </Button>
           </div>
+          {exportingAll && (
+            <div className="rounded-lg border border-[#C9A84C]/30 bg-[#C9A84C]/10 px-4 py-3 text-sm font-medium text-[#0D1B3E]">
+              Gerando slides…
+            </div>
+          )}
           <div className="grid gap-6 sm:grid-cols-2">
             {state.slides.map((sl, i) => (
               <SlidePreview
                 key={i}
                 index={i}
                 total={5}
-                variant={VARIANTS[i]}
+                variant={(state.palette === "light" ? VARIANTS_LIGHT : VARIANTS_DARK)[i]}
                 data={sl}
                 coverImage={i === 0 ? state.coverImage : null}
                 logo={state.logo}
