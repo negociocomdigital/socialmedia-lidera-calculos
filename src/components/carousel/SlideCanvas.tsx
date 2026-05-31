@@ -27,6 +27,8 @@ const colorsFor = (variant: SlideVariant) => {
       return { bg: "#F7F5F0", text: "#0D1B3E", muted: "rgba(13,27,62,0.7)", gold: "#C9A84C", decor: "#0D1B3E" };
     case "cta":
       return { bg: "#C9A84C", text: "#0D1B3E", muted: "rgba(13,27,62,0.8)", gold: "#0D1B3E", decor: "#0D1B3E" };
+    case "cta-dark":
+      return { bg: "#0D1B3E", text: "#FFFFFF", muted: "rgba(255,255,255,0.75)", gold: "#C9A84C", decor: "#FFFFFF" };
   }
 };
 
