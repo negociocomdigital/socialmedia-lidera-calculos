@@ -50,6 +50,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
   return (
     <div
       ref={ref}
+      className="slide-preview"
       style={{
         width: W,
         height: H,
