@@ -105,7 +105,10 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
         style={{
           position: "absolute",
           inset: 0,
-          padding: PAD,
+          paddingTop: PAD,
+          paddingRight: PAD,
+          paddingBottom: PAD,
+          paddingLeft: PAD_LEFT,
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
