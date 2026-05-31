@@ -42,16 +42,12 @@ async function getJSZip(): Promise<JSZipCtor> {
 
 async function captureBlob(node: HTMLElement): Promise<Blob> {
   const html2canvas = await getHtml2Canvas();
-  // The node lives inside a scaled wrapper; compensate so the capture is
-  // always 1080x1440 regardless of preview zoom.
-  const rect = node.getBoundingClientRect();
-  const scaleX = rect.width / 1080;
   const canvas = await html2canvas(node, {
     width: 1080,
     height: 1440,
     windowWidth: 1080,
     windowHeight: 1440,
-    scale: scaleX > 0 ? 1 / scaleX : 1,
+    scale: 1,
     useCORS: true,
     backgroundColor: null,
     logging: false,
