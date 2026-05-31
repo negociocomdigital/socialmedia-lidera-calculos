@@ -9,6 +9,7 @@ type Props = {
   variant: SlideVariant;
   data: SlideData;
   coverImage?: string | null;
+  logo?: string | null;
 };
 
 const PAD = 40;
@@ -29,12 +30,19 @@ const colorsFor = (variant: SlideVariant) => {
 };
 
 export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanvas(
-  { index, total, variant, data, coverImage },
+  { index, total, variant, data, coverImage, logo },
   ref,
 ) {
   const c = colorsFor(variant);
   const counter = `${String(index + 1).padStart(2, "0")}/${String(total).padStart(2, "0")}`;
   const decorativeNum = String(index + 1);
+
+  const logoFilter =
+    variant === "cta"
+      ? "brightness(0)"
+      : variant === "light"
+        ? "none"
+        : "brightness(10)";
 
   return (
     <div
@@ -114,6 +122,16 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             color: c.muted,
           }}
         >
+          {logo ? (
+            <img
+              src={logo}
+              alt="logo"
+              crossOrigin="anonymous"
+              style={{ height: 32, width: "auto", opacity: 0.8, filter: logoFilter, objectFit: "contain" }}
+            />
+          ) : (
+            <span />
+          )}
           <span>{counter}</span>
         </div>
 
