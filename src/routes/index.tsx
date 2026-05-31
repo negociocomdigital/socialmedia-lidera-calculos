@@ -22,6 +22,7 @@ export const Route = createFileRoute("/")({
 
 const VARIANTS_DARK: SlideVariant[] = ["cover", "light", "dark", "light", "cta"];
 const VARIANTS_LIGHT: SlideVariant[] = ["cover", "dark", "light", "dark", "cta"];
+const VARIANTS_GOLD: SlideVariant[] = ["cta", "dark", "light", "dark", "cta-dark"];
 
 const SAMPLE_JSON = JSON.stringify(
   {
