@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { SlideForm } from "@/components/carousel/SlideForm";
 import { SlidePreview } from "@/components/carousel/SlidePreview";
 import type { SlideVariant } from "@/components/carousel/SlideCanvas";
-import { DEFAULT_STATE, type CarouselState } from "@/lib/carouselTypes";
+import { DEFAULT_STATE, type CarouselState, type SlideData } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { exportSlide, wait } from "@/lib/exportSlide";
@@ -22,14 +22,57 @@ export const Route = createFileRoute("/")({
 
 const VARIANTS: SlideVariant[] = ["cover", "light", "dark", "light", "cta"];
 
+const SAMPLE_JSON = JSON.stringify(
+  {
+    tema: "Revisão de Aposentadoria",
+    slides: [
+      { tag: "Revisão de Aposentadoria", titulo1: "Você pode estar recebendo", titulo2: "menos do que merece.", corpo: "Erros no cálculo do INSS são mais comuns do que parecem. Deslize e descubra." },
+      { tag: "O problema", titulo1: "Por que muitos aposentados", titulo2: "recebem menos?", corpo: "Períodos não computados, salários desatualizados e erros na média salarial." },
+      { tag: "Seu direito", titulo1: "A revisão pode", titulo2: "aumentar seu benefício.", corpo: "A lei permite revisão quando há erro na concessão. Você tem até 10 anos." },
+      { tag: "Como funciona", titulo1: "Nossa análise é técnica,", titulo2: "clara e dentro do prazo.", corpo: "Análise completa do histórico, laudo técnico e atendimento pelo WhatsApp." },
+      { tag: "Próximo passo", titulo1: "Solicite sua", titulo2: "análise gratuita agora.", corpo: "Entre em contato pelo WhatsApp. Sem compromisso.", cta: "Falar no WhatsApp →" },
+    ],
+  },
+  null,
+  2,
+);
+
 function Index() {
   const [state, setState] = useState<CarouselState>(DEFAULT_STATE);
+  const [jsonText, setJsonText] = useState<string>(SAMPLE_JSON);
+  const [error, setError] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null, null]);
   const [exportingAll, setExportingAll] = useState(false);
 
   const onGenerate = () => {
-    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    let parsed: { tema?: string; slides?: Array<{ tag?: string; titulo1?: string; titulo2?: string; corpo?: string; cta?: string }> };
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch {
+      setError("JSON inválido. Verifique a formatação.");
+      return;
+    }
+    if (!parsed?.slides || !Array.isArray(parsed.slides) || parsed.slides.length < 5) {
+      setError("O JSON precisa conter um array 'slides' com 5 itens.");
+      return;
+    }
+    if (!state.coverImage) {
+      setError("A capa precisa de uma foto.");
+      return;
+    }
+    const slides: SlideData[] = parsed.slides.slice(0, 5).map((s, i) => ({
+      tag: s.tag ?? "",
+      titleLine1: s.titulo1 ?? "",
+      titleLine2: s.titulo2 ?? "",
+      body: s.corpo ?? "",
+      cta: i === 4 ? s.cta ?? "" : undefined,
+    }));
+    setError(null);
+    setState((s) => ({ ...s, theme: parsed.tema ?? s.theme, slides }));
+    requestAnimationFrame(() => {
+      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   const exportAll = async () => {
@@ -73,7 +116,14 @@ function Index() {
               Preencha cada slide e veja o preview ao vivo à direita.
             </p>
           </div>
-          <SlideForm state={state} setState={setState} onGenerate={onGenerate} />
+          <SlideForm
+            state={state}
+            setState={setState}
+            jsonText={jsonText}
+            setJsonText={setJsonText}
+            onGenerate={onGenerate}
+            errorMessage={error}
+          />
         </section>
 
         <section ref={previewRef} aria-label="Preview dos slides" className="space-y-6">
@@ -98,6 +148,7 @@ function Index() {
                 variant={VARIANTS[i]}
                 data={sl}
                 coverImage={i === 0 ? state.coverImage : null}
+                logo={state.logo}
                 registerRef={(n) => {
                   slideRefs.current[i] = n;
                 }}
