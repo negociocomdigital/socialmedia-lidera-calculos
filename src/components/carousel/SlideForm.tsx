@@ -1,32 +1,39 @@
-import type { CarouselState, SlideData } from "@/lib/carouselTypes";
+import type { CarouselState } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload } from "lucide-react";
-import { useRef } from "react";
+import { Upload, ImageIcon } from "lucide-react";
+import { useRef, useState } from "react";
 
 type Props = {
   state: CarouselState;
   setState: (updater: (s: CarouselState) => CarouselState) => void;
+  jsonText: string;
+  setJsonText: (v: string) => void;
   onGenerate: () => void;
+  errorMessage?: string | null;
 };
 
-export function SlideForm({ state, setState, onGenerate }: Props) {
-  const fileRef = useRef<HTMLInputElement>(null);
+export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, errorMessage }: Props) {
+  const coverRef = useRef<HTMLInputElement>(null);
+  const logoRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
 
-  const updateSlide = (i: number, patch: Partial<SlideData>) =>
-    setState((s) => ({
-      ...s,
-      slides: s.slides.map((sl, idx) => (idx === i ? { ...sl, ...patch } : sl)),
-    }));
-
-  const onFile = (file: File | undefined) => {
+  const onCoverFile = (file: File | undefined) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
     setState((s) => {
       if (s.coverImage) URL.revokeObjectURL(s.coverImage);
       return { ...s, coverImage: url };
+    });
+  };
+
+  const onLogoFile = (file: File | undefined) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setState((s) => {
+      if (s.logo) URL.revokeObjectURL(s.logo);
+      return { ...s, logo: url };
     });
   };
 
@@ -39,101 +46,93 @@ export function SlideForm({ state, setState, onGenerate }: Props) {
       }}
     >
       <div className="space-y-2">
-        <Label htmlFor="theme">Tema do carrossel</Label>
-        <Input
-          id="theme"
-          placeholder="Ex: Gestão financeira para clínicas"
-          value={state.theme}
-          onChange={(e) => setState((s) => ({ ...s, theme: e.target.value }))}
+        <Label htmlFor="command">Cole o comando aqui</Label>
+        <Textarea
+          id="command"
+          rows={14}
+          spellCheck={false}
+          className="font-mono text-xs"
+          placeholder='{"tema": "...", "slides": [ ... ]}'
+          value={jsonText}
+          onChange={(e) => setJsonText(e.target.value)}
         />
+        <p className="text-xs text-muted-foreground">
+          Cole um JSON com <code>tema</code> e 5 <code>slides</code> (tag, titulo1, titulo2, corpo, cta no último).
+        </p>
       </div>
 
       <div className="space-y-2">
-        <Label>Imagem de capa (slide 1)</Label>
+        <Label>Logo da empresa</Label>
         <input
-          ref={fileRef}
+          ref={logoRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => onFile(e.target.files?.[0])}
+          onChange={(e) => onLogoFile(e.target.files?.[0])}
         />
         <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileRef.current?.click()}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={() => logoRef.current?.click()}>
             <Upload />
-            {state.coverImage ? "Trocar imagem" : "Enviar imagem"}
+            {state.logo ? "Trocar logo" : "Enviar logo"}
           </Button>
-          {state.coverImage && (
+          {state.logo && (
             <img
-              src={state.coverImage}
-              alt="capa"
-              className="h-12 w-12 rounded-md object-cover ring-1 ring-border"
+              src={state.logo}
+              alt="logo"
+              className="h-10 w-auto rounded bg-white object-contain p-1 ring-1 ring-border"
             />
           )}
         </div>
       </div>
 
-      <div className="space-y-6">
-        {state.slides.map((sl, i) => (
-          <fieldset
-            key={i}
-            className="space-y-3 rounded-lg border border-border p-4"
-          >
-            <legend className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Slide {String(i + 1).padStart(2, "0")}
-            </legend>
-            <div className="space-y-2">
-              <Label htmlFor={`tag-${i}`}>Tag</Label>
-              <Input
-                id={`tag-${i}`}
-                value={sl.tag}
-                onChange={(e) => updateSlide(i, { tag: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="space-y-2">
-                <Label htmlFor={`t1-${i}`}>Título — linha 1</Label>
-                <Input
-                  id={`t1-${i}`}
-                  value={sl.titleLine1}
-                  onChange={(e) => updateSlide(i, { titleLine1: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`t2-${i}`}>Título — linha 2 (itálico dourado)</Label>
-                <Input
-                  id={`t2-${i}`}
-                  value={sl.titleLine2}
-                  onChange={(e) => updateSlide(i, { titleLine2: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor={`body-${i}`}>Corpo</Label>
-              <Textarea
-                id={`body-${i}`}
-                rows={3}
-                value={sl.body}
-                onChange={(e) => updateSlide(i, { body: e.target.value })}
-              />
-            </div>
-            {i === 4 && (
-              <div className="space-y-2">
-                <Label htmlFor={`cta-${i}`}>CTA</Label>
-                <Input
-                  id={`cta-${i}`}
-                  placeholder="Ex: Agendar conversa"
-                  value={sl.cta ?? ""}
-                  onChange={(e) => updateSlide(i, { cta: e.target.value })}
-                />
-              </div>
-            )}
-          </fieldset>
-        ))}
+      <div className="space-y-2">
+        <Label>Imagem de capa (slide 1)</Label>
+        <input
+          ref={coverRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => onCoverFile(e.target.files?.[0])}
+        />
+        <button
+          type="button"
+          onClick={() => coverRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            onCoverFile(e.dataTransfer.files?.[0]);
+          }}
+          className={`flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+            dragOver
+              ? "border-[#C9A84C] bg-[#C9A84C]/10"
+              : state.coverImage
+                ? "border-[#0D1B3E]/40 bg-white"
+                : "border-[#0D1B3E]/30 bg-white/60 hover:border-[#C9A84C] hover:bg-[#C9A84C]/5"
+          }`}
+        >
+          {state.coverImage ? (
+            <img
+              src={state.coverImage}
+              alt="capa"
+              className="h-32 w-full rounded-md object-cover"
+            />
+          ) : (
+            <ImageIcon className="h-8 w-8 text-[#0D1B3E]/60" />
+          )}
+          <span className="text-sm text-[#0D1B3E]/80">
+            {state.coverImage
+              ? "Clique ou arraste para trocar a foto"
+              : "Arraste uma foto para a capa ou clique para enviar"}
+          </span>
+        </button>
+        {errorMessage && (
+          <p className="text-sm font-medium text-red-600">{errorMessage}</p>
+        )}
       </div>
 
       <Button type="submit" className="w-full" size="lg">

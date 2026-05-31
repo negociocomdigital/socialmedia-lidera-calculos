@@ -11,10 +11,11 @@ type Props = {
   variant: SlideVariant;
   data: SlideData;
   coverImage?: string | null;
+  logo?: string | null;
   registerRef: (node: HTMLDivElement | null) => void;
 };
 
-export function SlidePreview({ index, total, variant, data, coverImage, registerRef }: Props) {
+export function SlidePreview({ index, total, variant, data, coverImage, logo, registerRef }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const slideRef = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(0.4);
@@ -66,6 +67,7 @@ export function SlidePreview({ index, total, variant, data, coverImage, register
             variant={variant}
             data={data}
             coverImage={coverImage}
+            logo={logo}
           />
         </div>
       </div>
