@@ -4,6 +4,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Brand tokens — Lidera Cálculos */
+:root {
+  --brand-dark: #0D1B3E;
+  --brand-light: #F7F5F0;
+  --brand-gold: #C9A84C;
+  --brand-white: #FFFFFF;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-sans-brand: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display { font-family: var(--font-display); }
+.font-brand   { font-family: var(--font-sans-brand); }
+
 /*
  * Design system definition.
  *
