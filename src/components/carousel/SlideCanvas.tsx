@@ -41,7 +41,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
   const decorativeNum = String(index + 1);
 
   const logoFilter =
-    variant === "cta"
+    variant === "cta" || variant === "cta-dark"
       ? "brightness(0)"
       : variant === "light"
         ? "none"
@@ -183,15 +183,15 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               {data.body}
             </div>
           )}
-          {variant === "cta" && data.cta && (
+          {(variant === "cta" || variant === "cta-dark") && data.cta && (
             <div style={{ marginTop: 16 }}>
               <span
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 18,
-                  backgroundColor: "#0D1B3E",
-                  color: "#FFFFFF",
+                  backgroundColor: variant === "cta-dark" ? "#C9A84C" : "#0D1B3E",
+                  color: variant === "cta-dark" ? "#0D1B3E" : "#FFFFFF",
                   padding: "26px 44px",
                   borderRadius: 999,
                   fontSize: 30,
@@ -200,7 +200,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
                 }}
               >
                 {data.cta}
-                <span style={{ color: "#C9A84C", fontSize: 32, lineHeight: 1 }}>→</span>
+                <span style={{ color: variant === "cta-dark" ? "#0D1B3E" : "#C9A84C", fontSize: 32, lineHeight: 1 }}>→</span>
               </span>
             </div>
           )}
@@ -237,7 +237,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
       </div>
 
       {/* CTA: large centered logo at bottom */}
-      {variant === "cta" && logo && (
+      {(variant === "cta" || variant === "cta-dark") && logo && (
         <div
           style={{
             position: "absolute",
@@ -253,7 +253,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             src={logo}
             alt="logo"
             crossOrigin="anonymous"
-            style={{ height: 56, width: "auto", opacity: 1, filter: "brightness(0)", objectFit: "contain" }}
+            style={{ height: 90, width: "auto", opacity: 1, filter: "brightness(0)", objectFit: "contain" }}
           />
         </div>
       )}
