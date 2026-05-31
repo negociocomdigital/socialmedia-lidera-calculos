@@ -13,6 +13,7 @@ type Props = {
 };
 
 const PAD = 40;
+const PAD_LEFT = 64;
 const W = 1080;
 const H = 1440;
 
