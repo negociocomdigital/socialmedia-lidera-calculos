@@ -5,7 +5,7 @@ import { SlidePreview } from "@/components/carousel/SlidePreview";
 import type { SlideVariant } from "@/components/carousel/SlideCanvas";
 import { DEFAULT_STATE, type CarouselState, type SlideData } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import { exportAllSlides } from "@/lib/exportSlide";
 import logoAsset from "@/assets/logo.png";
 
@@ -140,6 +140,15 @@ function Index() {
             >
               <Download />
               {exportingAll ? "Gerando..." : "Exportar todos os slides"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="border-[#0D1B3E]/20 text-[#0D1B3E] hover:bg-[#0D1B3E]/5"
+            >
+              <RefreshCw />
+              Novo post
             </Button>
           </div>
           {exportingAll && (
