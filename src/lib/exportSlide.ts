@@ -20,10 +20,10 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
   slideElement.style.transform = "none";
   slideElement.style.transformOrigin = "unset";
 
-  await new Promise((r) => setTimeout(r, 400));
+  await new Promise((r) => setTimeout(r, 200));
 
   const options: Partial<Html2CanvasOptions> = {
-    scale: 1,
+    scale: 2,
     useCORS: true,
     allowTaint: true,
     backgroundColor: null,
@@ -35,24 +35,40 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
     scrollY: 0,
     logging: false,
     imageTimeout: 0,
-    ignoreElements: (element) => element.tagName === "STYLE" || element.tagName === "LINK",
     onclone: (clonedDocument) => {
-      clonedDocument.querySelectorAll("style, link[rel='stylesheet']").forEach((node) => node.remove());
+      // Remove apenas stylesheets que contêm oklch (quebra o parser do html2canvas).
+      // Mantém Google Fonts (Playfair Display / DM Sans) para fidelidade tipográfica.
+      clonedDocument.querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']").forEach((link) => {
+        if (!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(link.href)) {
+          link.remove();
+        }
+      });
+      clonedDocument.querySelectorAll<HTMLStyleElement>("style").forEach((styleNode) => {
+        if (styleNode.textContent && /oklch\(/i.test(styleNode.textContent)) {
+          styleNode.remove();
+        }
+      });
+
+      // Reinjeta as CSS vars de fonte que vinham do styles.css removido.
+      const fallbackVars = clonedDocument.createElement("style");
+      fallbackVars.textContent = `
+        :root{
+          --font-display:"Playfair Display",Georgia,serif;
+          --font-sans-brand:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+        }
+        .slide-preview,.slide-preview *{
+          word-spacing:normal;
+          letter-spacing:normal;
+        }
+      `;
+      clonedDocument.head.appendChild(fallbackVars);
+
+      // Garante que o slide renderiza no tamanho real, sem o scale do preview.
       clonedDocument.querySelectorAll<HTMLElement>(".slide-preview").forEach((clonedSlide) => {
         clonedSlide.style.width = "1080px";
         clonedSlide.style.height = "1440px";
         clonedSlide.style.transform = "none";
         clonedSlide.style.transformOrigin = "unset";
-        clonedSlide.style.fontFamily = "'DM Sans', Arial, sans-serif";
-        clonedSlide.style.letterSpacing = "normal";
-        clonedSlide.style.wordSpacing = "normal";
-        clonedSlide.querySelectorAll<HTMLElement>("*").forEach((node) => {
-          const family = node.style.fontFamily;
-          if (family.includes("var(--font-display)")) node.style.fontFamily = "'Playfair Display', Georgia, serif";
-          if (family.includes("var(--font-sans-brand)")) node.style.fontFamily = "'DM Sans', Arial, sans-serif";
-          node.style.letterSpacing = "normal";
-          node.style.wordSpacing = "normal";
-        });
       });
     },
   };
