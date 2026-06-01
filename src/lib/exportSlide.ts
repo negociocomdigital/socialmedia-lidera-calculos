@@ -24,6 +24,19 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
     scrollX: 0,
     scrollY: 0,
     logging: false,
+    ignoreElements: (element) => element.tagName === "STYLE" || element.tagName === "LINK",
+    onclone: (clonedDocument) => {
+      clonedDocument.querySelectorAll("style, link[rel='stylesheet']").forEach((node) => node.remove());
+      const clonedSlide = clonedDocument.querySelector<HTMLElement>(".slide-preview");
+      if (clonedSlide) {
+        clonedSlide.style.fontFamily = "'DM Sans', Arial, sans-serif";
+        clonedSlide.querySelectorAll<HTMLElement>("*").forEach((node) => {
+          const family = node.style.fontFamily;
+          if (family.includes("var(--font-display)")) node.style.fontFamily = "'Playfair Display', Georgia, serif";
+          if (family.includes("var(--font-sans-brand)")) node.style.fontFamily = "'DM Sans', Arial, sans-serif";
+        });
+      }
+    },
   };
   return await html2canvas(slideElement, options);
 }
