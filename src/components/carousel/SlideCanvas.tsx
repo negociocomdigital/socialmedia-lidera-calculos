@@ -25,6 +25,8 @@ const PAD = 40;
 const PAD_LEFT = 64;
 const W = 1080;
 const H = 1440;
+const TITLE_MAX_WIDTH = 880;
+const BODY_MAX_WIDTH = 820;
 
 const TEXT_STYLE = {
   letterSpacing: "normal",
@@ -213,7 +215,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
         </div>
 
         {/* Middle block: tag, divider, title, body, optional CTA */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: 880 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: TITLE_MAX_WIDTH }}>
           {data.tag && (
             <div
               style={{
@@ -235,6 +237,8 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               fontSize: 96,
               lineHeight: 1.05,
               color: c.text,
+                overflowWrap: "anywhere",
+                wordBreak: "normal",
               ...TEXT_STYLE,
             }}
           >
@@ -252,7 +256,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             )}
           </div>
           {data.body && (
-            <div style={{ fontSize: 32, lineHeight: 1.45, color: c.muted, maxWidth: 820, ...TEXT_STYLE }}>
+            <div style={{ fontSize: 32, lineHeight: 1.45, color: c.muted, maxWidth: BODY_MAX_WIDTH, overflowWrap: "anywhere", ...TEXT_STYLE }}>
               {data.body}
             </div>
           )}
