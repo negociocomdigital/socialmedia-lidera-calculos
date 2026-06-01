@@ -45,7 +45,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
       ? "brightness(0)"
       : variant === "light"
         ? "none"
-        : "brightness(10)";
+        : "brightness(0) invert(1)";
 
   return (
     <div
@@ -254,7 +254,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             src={logo}
             alt="logo"
             crossOrigin="anonymous"
-            style={{ height: 90, width: "auto", opacity: 1, filter: variant === "cta-dark" ? "brightness(10)" : "brightness(0)", objectFit: "contain" }}
+            style={{ height: 90, width: "auto", opacity: 1, filter: variant === "cta-dark" ? "brightness(0) invert(1)" : "brightness(0)", objectFit: "contain" }}
           />
         </div>
       )}
