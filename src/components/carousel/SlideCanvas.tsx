@@ -41,7 +41,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
   const decorativeNum = String(index + 1);
 
   const logoFilter =
-    variant === "cta" || variant === "cta-dark"
+    variant === "cta"
       ? "brightness(0)"
       : variant === "light"
         ? "none"
@@ -254,7 +254,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             src={logo}
             alt="logo"
             crossOrigin="anonymous"
-            style={{ height: 90, width: "auto", opacity: 1, filter: "brightness(0)", objectFit: "contain" }}
+            style={{ height: 90, width: "auto", opacity: 1, filter: variant === "cta-dark" ? "brightness(10)" : "brightness(0)", objectFit: "contain" }}
           />
         </div>
       )}
