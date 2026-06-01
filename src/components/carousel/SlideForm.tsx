@@ -79,7 +79,7 @@ export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, 
       </div>
 
       <div className="space-y-2">
-        <Label>Imagem de capa (slide 1)</Label>
+        <Label>Imagem de capa (slide 1) — opcional</Label>
         <input
           ref={coverRef}
           type="file"
@@ -123,6 +123,22 @@ export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, 
               : "Arraste uma foto para a capa ou clique para enviar"}
           </span>
         </button>
+        {state.coverImage && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              setState((s) => {
+                if (s.coverImage) URL.revokeObjectURL(s.coverImage);
+                return { ...s, coverImage: null };
+              });
+              if (coverRef.current) coverRef.current.value = "";
+            }}
+          >
+            Remover foto
+          </Button>
+        )}
         {errorMessage && (
           <p className="text-sm font-medium text-red-600">{errorMessage}</p>
         )}
