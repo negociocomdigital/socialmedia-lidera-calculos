@@ -5,7 +5,7 @@ import { SlidePreview } from "@/components/carousel/SlidePreview";
 import type { SlideVariant } from "@/components/carousel/SlideCanvas";
 import { DEFAULT_STATE, type CarouselState, type SlideData } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import { exportAllSlides } from "@/lib/exportSlide";
 import logoAsset from "@/assets/logo.png";
 
@@ -132,6 +132,7 @@ function Index() {
         <section ref={previewRef} aria-label="Preview dos slides" className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl font-bold">Preview</h2>
+            <div className="flex items-center gap-2">
             <Button
               type="button"
               onClick={exportAll}
@@ -141,6 +142,16 @@ function Index() {
               <Download />
               {exportingAll ? "Gerando..." : "Exportar todos os slides"}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="border-[#0D1B3E]/20 text-[#0D1B3E] hover:bg-[#0D1B3E]/5"
+            >
+              <RefreshCw />
+              Novo post
+            </Button>
+            </div>
           </div>
           {exportingAll && (
             <div className="rounded-lg border border-[#C9A84C]/30 bg-[#C9A84C]/10 px-4 py-3 text-sm font-medium text-[#0D1B3E]">
