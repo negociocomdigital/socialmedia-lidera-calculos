@@ -34,13 +34,13 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
   }, []);
 
   const onExport = async () => {
-    if (!slideRef.current) return;
     setExporting(true);
     setExportError(null);
     try {
-      const slideElement = document.querySelectorAll<HTMLElement>(".slide-preview")[index];
-      if (!slideElement) throw new Error(`Slide ${index + 1} não encontrado.`);
-      await exportSlide(slideElement, `slide-0${index + 1}.png`);
+      await exportSlide(
+        { index, total, variant, data, coverImage, logo },
+        `slide-0${index + 1}.png`,
+      );
     } catch (err) {
       setExportError(err instanceof Error ? err.message : "Não foi possível exportar este slide.");
     } finally {
