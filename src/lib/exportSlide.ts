@@ -291,22 +291,22 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
   const counter = `${String(index + 1).padStart(2, "0")}/${String(total).padStart(2, "0")}`;
   ctx.fillText(counter.toUpperCase(), W - PAD, PAD + 45);
 
-  // 4. Middle block — position so it sits roughly centered
+  // 4. Middle block — same vertical distribution as the preview flex layout
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  let y = 560;
+  let y = getMiddleBlockY(ctx, data, isCta);
 
   if (data.tag) {
     ctx.font = `700 26px ${FONT_SANS}`;
     ctx.fillStyle = variant === "light" || variant === "cta" ? c.text : c.gold;
     ctx.fillText(data.tag.toUpperCase(), PAD_LEFT, y);
-    y += 32 + 28;
+    y += 32 + MIDDLE_GAP;
   }
 
   // Divider
   ctx.fillStyle = isGoldBg ? "#0D1B3E" : "#C9A84C";
   ctx.fillRect(PAD_LEFT, y, 32, 2);
-  y += 2 + 28;
+  y += 2 + MIDDLE_GAP;
 
   // Title
   const titleLineH = 96 * 1.05;
@@ -320,7 +320,7 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
     ctx.fillStyle = isGoldBg ? "#0D1B3E" : "#C9A84C";
     y = drawWrappedText(ctx, data.titleLine2, PAD_LEFT, y, TITLE_MAX_WIDTH, titleLineH);
   }
-  y += 28;
+  y += MIDDLE_GAP;
 
   // Body
   if (data.body) {
