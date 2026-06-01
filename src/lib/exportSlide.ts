@@ -7,6 +7,9 @@ const PAD = 40;
 const PAD_LEFT = 64;
 const TITLE_MAX_WIDTH = 880;
 const BODY_MAX_WIDTH = 820;
+const TOP_ROW_HEIGHT = 90;
+const FOOTER_HEIGHT = 28;
+const MIDDLE_GAP = 28;
 const FONT_DISPLAY = `"Playfair Display", Georgia, serif`;
 const FONT_SANS = `"DM Sans", ui-sans-serif, system-ui, sans-serif`;
 
@@ -149,6 +152,37 @@ function drawWrappedText(
     curY += lineHeight;
   }
   return curY;
+}
+
+function measureMiddleBlockHeight(ctx: CanvasRenderingContext2D, data: SlideData, isCta: boolean): number {
+  const titleLineH = 96 * 1.05;
+  const bodyLineH = 32 * 1.45;
+  const children: number[] = [];
+
+  if (data.tag) children.push(32);
+  children.push(2);
+
+  let titleHeight = 0;
+  ctx.font = `700 96px ${FONT_DISPLAY}`;
+  if (data.titleLine1) titleHeight += getWrappedLines(ctx, data.titleLine1, TITLE_MAX_WIDTH).length * titleLineH;
+  ctx.font = `italic 700 96px ${FONT_DISPLAY}`;
+  if (data.titleLine2) titleHeight += getWrappedLines(ctx, data.titleLine2, TITLE_MAX_WIDTH).length * titleLineH;
+  if (titleHeight) children.push(titleHeight);
+
+  ctx.font = `400 32px ${FONT_SANS}`;
+  if (data.body) children.push(getWrappedLines(ctx, data.body, BODY_MAX_WIDTH).length * bodyLineH);
+
+  if (isCta && data.cta) children.push(16 + 30 + 12 * 2);
+
+  const gaps = Math.max(0, children.length - 1) * MIDDLE_GAP;
+  return children.reduce((sum, height) => sum + height, 0) + gaps;
+}
+
+function getMiddleBlockY(ctx: CanvasRenderingContext2D, data: SlideData, isCta: boolean): number {
+  const innerHeight = H - PAD * 2;
+  const middleHeight = measureMiddleBlockHeight(ctx, data, isCta);
+  const freeSpace = innerHeight - TOP_ROW_HEIGHT - middleHeight - FOOTER_HEIGHT;
+  return PAD + TOP_ROW_HEIGHT + Math.max(0, freeSpace / 2);
 }
 
 async function ensureFontsReady() {
