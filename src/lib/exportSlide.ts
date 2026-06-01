@@ -15,23 +15,12 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
   await document.fonts?.ready;
   const html2canvas = await getHtml2Canvas();
 
-  // Force fixed render size so html2canvas captures the full 1080x1440 slide
-  const originalWidth = slideElement.style.width;
-  const originalHeight = slideElement.style.height;
   const originalTransform = slideElement.style.transform;
-  slideElement.style.width = "1080px";
-  slideElement.style.height = "1440px";
+  const originalTransformOrigin = slideElement.style.transformOrigin;
   slideElement.style.transform = "none";
+  slideElement.style.transformOrigin = "unset";
 
-  // Neutralize any ancestor transforms (preview uses transform: scale(...) on wrapper)
-  const ancestorOverrides: Array<{ el: HTMLElement; transform: string }> = [];
-  let parent = slideElement.parentElement;
-  while (parent) {
-    ancestorOverrides.push({ el: parent, transform: parent.style.transform });
-    parent.style.transform = "none";
-    parent = parent.parentElement;
-  }
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, 400));
 
   const options: Partial<Html2CanvasOptions> = {
     scale: 1,
@@ -53,11 +42,16 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
         clonedSlide.style.width = "1080px";
         clonedSlide.style.height = "1440px";
         clonedSlide.style.transform = "none";
+        clonedSlide.style.transformOrigin = "unset";
         clonedSlide.style.fontFamily = "'DM Sans', Arial, sans-serif";
+        clonedSlide.style.letterSpacing = "normal";
+        clonedSlide.style.wordSpacing = "normal";
         clonedSlide.querySelectorAll<HTMLElement>("*").forEach((node) => {
           const family = node.style.fontFamily;
           if (family.includes("var(--font-display)")) node.style.fontFamily = "'Playfair Display', Georgia, serif";
           if (family.includes("var(--font-sans-brand)")) node.style.fontFamily = "'DM Sans', Arial, sans-serif";
+          node.style.letterSpacing = "normal";
+          node.style.wordSpacing = "normal";
         });
       });
     },
@@ -65,12 +59,8 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
   try {
     return await html2canvas(slideElement, options);
   } finally {
-    slideElement.style.width = originalWidth;
-    slideElement.style.height = originalHeight;
     slideElement.style.transform = originalTransform;
-    ancestorOverrides.forEach(({ el, transform }) => {
-      el.style.transform = transform;
-    });
+    slideElement.style.transformOrigin = originalTransformOrigin;
   }
 }
 
