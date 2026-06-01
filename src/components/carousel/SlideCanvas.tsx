@@ -60,6 +60,8 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
     flexShrink: 0,
     fontFamily: "var(--font-sans-brand)",
     "--preview-scale": previewScale,
+    transform: "scale(var(--preview-scale))",
+    transformOrigin: "top left",
     ...TEXT_STYLE,
   } as CSSProperties;
 
