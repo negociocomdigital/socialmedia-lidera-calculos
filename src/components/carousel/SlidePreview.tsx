@@ -59,8 +59,6 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
           style={{
             width: SLIDE_WIDTH,
             height: SLIDE_HEIGHT,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
           }}
         >
           <SlideCanvas
@@ -74,6 +72,7 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
             data={data}
             coverImage={coverImage}
             logo={logo}
+            previewScale={scale}
           />
         </div>
       </div>
