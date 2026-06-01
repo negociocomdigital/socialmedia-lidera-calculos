@@ -19,6 +19,25 @@ export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, 
   const logoRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
+  const createWhiteLogo = async (file: File) => {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Não foi possível preparar o logo branco.");
+    ctx.drawImage(bitmap, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      imageData.data[i] = 255;
+      imageData.data[i + 1] = 255;
+      imageData.data[i + 2] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+    bitmap.close();
+    return canvas.toDataURL("image/png");
+  };
+
   const onCoverFile = (file: File | undefined) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
@@ -28,12 +47,13 @@ export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, 
     });
   };
 
-  const onLogoFile = (file: File | undefined) => {
+  const onLogoFile = async (file: File | undefined) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
+    const whiteLogo = await createWhiteLogo(file);
     setState((s) => {
       if (s.logo) URL.revokeObjectURL(s.logo);
-      return { ...s, logo: url };
+      return { ...s, logo: url, whiteLogo };
     });
   };
 
