@@ -23,7 +23,7 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
   await new Promise((r) => setTimeout(r, 200));
 
   const options: Partial<Html2CanvasOptions> = {
-    scale: 2,
+    scale: 1,
     useCORS: true,
     allowTaint: true,
     backgroundColor: null,
