@@ -132,6 +132,7 @@ function Index() {
         <section ref={previewRef} aria-label="Preview dos slides" className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl font-bold">Preview</h2>
+            <div className="flex items-center gap-2">
             <Button
               type="button"
               onClick={exportAll}
@@ -150,6 +151,7 @@ function Index() {
               <RefreshCw />
               Novo post
             </Button>
+            </div>
           </div>
           {exportingAll && (
             <div className="rounded-lg border border-[#C9A84C]/30 bg-[#C9A84C]/10 px-4 py-3 text-sm font-medium text-[#0D1B3E]">
