@@ -22,6 +22,15 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
   slideElement.style.width = "1080px";
   slideElement.style.height = "1440px";
   slideElement.style.transform = "none";
+
+  // Neutralize any ancestor transforms (preview uses transform: scale(...) on wrapper)
+  const ancestorOverrides: Array<{ el: HTMLElement; transform: string }> = [];
+  let parent = slideElement.parentElement;
+  while (parent) {
+    ancestorOverrides.push({ el: parent, transform: parent.style.transform });
+    parent.style.transform = "none";
+    parent = parent.parentElement;
+  }
   await new Promise((r) => setTimeout(r, 300));
 
   const options: Partial<Html2CanvasOptions> = {
@@ -59,6 +68,9 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
     slideElement.style.width = originalWidth;
     slideElement.style.height = originalHeight;
     slideElement.style.transform = originalTransform;
+    ancestorOverrides.forEach(({ el, transform }) => {
+      el.style.transform = transform;
+    });
   }
 }
 
