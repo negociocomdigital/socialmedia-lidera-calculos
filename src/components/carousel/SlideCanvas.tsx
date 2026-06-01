@@ -10,6 +10,7 @@ type Props = {
   data: SlideData;
   coverImage?: string | null;
   logo?: string | null;
+  whiteLogo?: string | null;
   previewScale?: number;
 };
 
@@ -39,7 +40,7 @@ const colorsFor = (variant: SlideVariant) => {
 };
 
 export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanvas(
-  { index, total, variant, data, coverImage, logo, previewScale = 1 },
+  { index, total, variant, data, coverImage, logo, whiteLogo, previewScale = 1 },
   ref,
 ) {
   const c = colorsFor(variant);
@@ -49,6 +50,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
   const ctaText = data.cta ? (data.cta.includes("→") ? data.cta : `${data.cta} →`) : "";
 
   const logoFilter = isDarkBackground ? "brightness(0) invert(1) brightness(2)" : variant === "cta" ? "brightness(0)" : "none";
+  const visibleLogo = isDarkBackground ? whiteLogo || logo : logo;
 
   const slideStyle = {
     width: W,
@@ -148,10 +150,10 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             color: c.muted,
           }}
         >
-          {logo && variant !== "cta" ? (
+          {visibleLogo && variant !== "cta" ? (
             <img
               key={isDarkBackground ? "logo-white" : "logo-normal"}
-              src={logo}
+              src={visibleLogo}
               alt="logo"
               crossOrigin="anonymous"
               data-logo-version={isDarkBackground ? "white" : "normal"}
@@ -276,7 +278,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
           }}
         >
           <img
-            src={logo}
+            src={variant === "cta-dark" ? whiteLogo || logo : logo}
             alt="logo"
             crossOrigin="anonymous"
             data-logo-version={variant === "cta-dark" ? "white" : "normal"}
