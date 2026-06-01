@@ -5,6 +5,8 @@ const W = 1080;
 const H = 1440;
 const PAD = 40;
 const PAD_LEFT = 64;
+const TITLE_MAX_WIDTH = 880;
+const BODY_MAX_WIDTH = 820;
 const FONT_DISPLAY = `"Playfair Display", Georgia, serif`;
 const FONT_SANS = `"DM Sans", ui-sans-serif, system-ui, sans-serif`;
 
@@ -92,21 +94,61 @@ function wrapText(
   maxWidth: number,
   lineHeight: number,
 ): number {
-  const words = text.split(/\s+/).filter(Boolean);
-  let line = "";
+  const lines = getWrappedLines(ctx, text, maxWidth);
   let curY = y;
-  for (let i = 0; i < words.length; i++) {
-    const test = line ? line + " " + words[i] : words[i];
-    if (ctx.measureText(test).width > maxWidth && line) {
-      ctx.fillText(line, x, curY);
-      line = words[i];
-      curY += lineHeight;
-    } else {
+  for (const line of lines) {
+    ctx.fillText(line, x, curY);
+    curY += lineHeight;
+  }
+  return curY;
+}
+
+function getWrappedLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width <= maxWidth) {
       line = test;
+      continue;
+    }
+    if (line) lines.push(line);
+    if (ctx.measureText(word).width <= maxWidth) {
+      line = word;
+    } else {
+      let chunk = "";
+      for (const char of Array.from(word)) {
+        const next = chunk + char;
+        if (ctx.measureText(next).width > maxWidth && chunk) {
+          lines.push(chunk);
+          chunk = char;
+        } else {
+          chunk = next;
+        }
+      }
+      line = chunk;
     }
   }
-  if (line) ctx.fillText(line, x, curY);
-  return curY + lineHeight;
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
+}
+
+function drawWrappedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+): number {
+  const lines = getWrappedLines(ctx, text, maxWidth);
+  let curY = y;
+  for (const line of lines) {
+    ctx.fillText(line, x, curY);
+    curY += lineHeight;
+  }
+  return curY;
 }
 
 async function ensureFontsReady() {
