@@ -166,6 +166,7 @@ function Index() {
                 data={sl}
                 coverImage={i === 0 ? state.coverImage : null}
                 logo={state.logo}
+                whiteLogo={state.whiteLogo}
                 registerRef={(n) => {
                   slideRefs.current[i] = n;
                 }}
