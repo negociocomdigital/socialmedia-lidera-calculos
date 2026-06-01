@@ -1,65 +1,88 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-declare global {
-  interface Window {
-    html2canvas: any;
-    JSZip: any;
-  }
+import type { Options as Html2CanvasOptions } from "html2canvas";
+
+async function getHtml2Canvas() {
+  const module = await import("html2canvas");
+  return module.default;
 }
 
-async function waitForLib(name: "html2canvas" | "JSZip", timeoutMs = 8000) {
-  const start = Date.now();
-  while (!(window as any)[name]) {
-    if (Date.now() - start > timeoutMs) throw new Error(`${name} não carregou`);
-    await new Promise((r) => setTimeout(r, 50));
-  }
-  return (window as any)[name];
+async function getJSZip() {
+  const module = await import("jszip");
+  return module.default;
 }
 
 async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
-  const html2canvas = await waitForLib("html2canvas");
-  return await html2canvas(slideElement, {
+  if (!slideElement) throw new Error("Slide não encontrado para exportação.");
+  await document.fonts?.ready;
+  const html2canvas = await getHtml2Canvas();
+  const options: Partial<Html2CanvasOptions> = {
     scale: 2,
     useCORS: true,
     allowTaint: true,
     backgroundColor: null,
     width: slideElement.offsetWidth,
     height: slideElement.offsetHeight,
+    scrollX: 0,
+    scrollY: 0,
     logging: false,
+    ignoreElements: (element) => element.tagName === "STYLE" || element.tagName === "LINK",
+    onclone: (clonedDocument) => {
+      clonedDocument.querySelectorAll("style, link[rel='stylesheet']").forEach((node) => node.remove());
+      const clonedSlide = clonedDocument.querySelector<HTMLElement>(".slide-preview");
+      if (clonedSlide) {
+        clonedSlide.style.fontFamily = "'DM Sans', Arial, sans-serif";
+        clonedSlide.querySelectorAll<HTMLElement>("*").forEach((node) => {
+          const family = node.style.fontFamily;
+          if (family.includes("var(--font-display)")) node.style.fontFamily = "'Playfair Display', Georgia, serif";
+          if (family.includes("var(--font-sans-brand)")) node.style.fontFamily = "'DM Sans', Arial, sans-serif";
+        });
+      }
+    },
+  };
+  return await html2canvas(slideElement, options);
+}
+
+async function canvasToBlob(canvas: HTMLCanvasElement) {
+  return await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("Não foi possível gerar o arquivo PNG."));
+    }, "image/png");
   });
 }
 
-function downloadFromUrl(url: string, filename: string) {
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.download = filename;
   link.href = url;
+  link.rel = "noopener";
+  link.style.display = "none";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export async function exportSlide(slideElement: HTMLElement, filename: string) {
   const canvas = await capture(slideElement);
-  downloadFromUrl(canvas.toDataURL("image/png"), filename);
+  const blob = await canvasToBlob(canvas);
+  downloadBlob(blob, filename);
 }
 
-export async function exportSlidesAsZip(
-  _nodes: (HTMLElement | null)[],
-  zipName = "lidera-carrossel.zip",
-) {
-  const JSZip = await waitForLib("JSZip");
+export async function exportAllSlides(zipName = "lidera-carrossel.zip") {
+  const JSZip = await getJSZip();
   const zip = new JSZip();
   const slides = document.querySelectorAll<HTMLElement>(".slide-preview");
+  if (!slides.length) throw new Error("Nenhum slide com a classe .slide-preview foi encontrado.");
+
   for (let i = 0; i < slides.length; i++) {
     const canvas = await capture(slides[i]);
-    const blob: Blob = await new Promise((resolve) =>
-      canvas.toBlob((b: Blob | null) => resolve(b as Blob), "image/png"),
-    );
+    const blob = await canvasToBlob(canvas);
     zip.file(`slide-0${i + 1}.png`, blob);
   }
+
   const zipBlob: Blob = await zip.generateAsync({ type: "blob" });
-  const url = URL.createObjectURL(zipBlob);
-  downloadFromUrl(url, zipName);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadBlob(zipBlob, zipName);
 }
 
 export const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));

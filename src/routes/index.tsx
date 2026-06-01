@@ -6,7 +6,7 @@ import type { SlideVariant } from "@/components/carousel/SlideCanvas";
 import { DEFAULT_STATE, type CarouselState, type SlideData } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { exportSlidesAsZip } from "@/lib/exportSlide";
+import { exportAllSlides } from "@/lib/exportSlide";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,6 +46,7 @@ function Index() {
   const previewRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null, null]);
   const [exportingAll, setExportingAll] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const onGenerate = () => {
     let parsed: { tema?: string; slides?: Array<{ tag?: string; titulo1?: string; titulo2?: string; corpo?: string; cta?: string }> };
@@ -79,8 +80,11 @@ function Index() {
 
   const exportAll = async () => {
     setExportingAll(true);
+    setExportError(null);
     try {
-      await exportSlidesAsZip(slideRefs.current, "lidera-carrossel.zip");
+      await exportAllSlides("lidera-carrossel.zip");
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Não foi possível exportar os slides.");
     } finally {
       setExportingAll(false);
     }
@@ -133,12 +137,17 @@ function Index() {
               className="bg-[#0D1B3E] text-white hover:bg-[#0D1B3E]/90"
             >
               <Download />
-              {exportingAll ? "Exportando..." : "Exportar todos os slides"}
+              {exportingAll ? "Gerando..." : "Exportar todos os slides"}
             </Button>
           </div>
           {exportingAll && (
             <div className="rounded-lg border border-[#C9A84C]/30 bg-[#C9A84C]/10 px-4 py-3 text-sm font-medium text-[#0D1B3E]">
               Gerando slides…
+            </div>
+          )}
+          {exportError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              {exportError}
             </div>
           )}
           <div className="grid gap-6 sm:grid-cols-2">
