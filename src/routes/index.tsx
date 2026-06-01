@@ -105,7 +105,7 @@ function Index() {
     <div className="min-h-screen bg-[#F7F5F0] text-[#0D1B3E]">
       <header className="border-b border-black/10 bg-white/60 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-6 py-5">
-          <img src={logoAsset} alt="Lidera Cálculos" style={{ height: 52, width: "auto" }} />
+          <img src={logoAsset} alt="Lidera Cálculos" style={{ height: 80, width: "auto" }} />
           <span className="text-xs uppercase tracking-[0.25em] text-[#0D1B3E]/60">
             Gerador de Carrossel
           </span>
