@@ -61,10 +61,6 @@ function Index() {
       setError("O JSON precisa conter um array 'slides' com 5 itens.");
       return;
     }
-    if (!state.coverImage) {
-      setError("A capa precisa de uma foto.");
-      return;
-    }
     const slides: SlideData[] = parsed.slides.slice(0, 5).map((s, i) => ({
       tag: s.tag ?? "",
       titleLine1: s.titulo1 ?? "",
