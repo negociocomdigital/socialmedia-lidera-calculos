@@ -89,6 +89,9 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
 
   const renderLogo = (extraStyle?: CSSProperties) => {
     if (!logo) return null;
+    const navyFilter =
+      "brightness(0) saturate(100%) invert(8%) sepia(96%) saturate(2926%) hue-rotate(215deg) brightness(94%) contrast(96%)";
+    const mode: "normal" | "white" | "navy" = isGoldBg ? "navy" : isDarkBackground ? "white" : "normal";
     return (
       <div style={{ position: "relative", display: "inline-block" }}>
         <img
@@ -98,7 +101,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
           style={{
             ...logoStyle,
             ...extraStyle,
-            display: isDarkBackground ? "none" : "block",
+            display: mode === "normal" ? "block" : "none",
           }}
         />
         <img
@@ -109,7 +112,18 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             ...logoStyle,
             ...extraStyle,
             filter: "brightness(0) invert(1)",
-            display: isDarkBackground ? "block" : "none",
+            display: mode === "white" ? "block" : "none",
+          }}
+        />
+        <img
+          src={logo}
+          alt="logo"
+          crossOrigin="anonymous"
+          style={{
+            ...logoStyle,
+            ...extraStyle,
+            filter: navyFilter,
+            display: mode === "navy" ? "block" : "none",
           }}
         />
       </div>
