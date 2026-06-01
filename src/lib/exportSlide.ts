@@ -279,14 +279,12 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
   if (data.titleLine1) {
     ctx.font = `700 96px ${FONT_DISPLAY}`;
     ctx.fillStyle = c.text;
-    ctx.fillText(data.titleLine1, PAD_LEFT, y);
-    y += titleLineH;
+    y = drawWrappedText(ctx, data.titleLine1, PAD_LEFT, y, TITLE_MAX_WIDTH, titleLineH);
   }
   if (data.titleLine2) {
     ctx.font = `italic 700 96px ${FONT_DISPLAY}`;
     ctx.fillStyle = isGoldBg ? "#0D1B3E" : "#C9A84C";
-    ctx.fillText(data.titleLine2, PAD_LEFT, y);
-    y += titleLineH;
+    y = drawWrappedText(ctx, data.titleLine2, PAD_LEFT, y, TITLE_MAX_WIDTH, titleLineH);
   }
   y += 28;
 
@@ -294,7 +292,7 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
   if (data.body) {
     ctx.font = `400 32px ${FONT_SANS}`;
     ctx.fillStyle = c.muted;
-    y = wrapText(ctx, data.body, PAD_LEFT, y, 820, 32 * 1.45);
+    y = wrapText(ctx, data.body, PAD_LEFT, y, BODY_MAX_WIDTH, 32 * 1.45);
   }
 
   // CTA pill
