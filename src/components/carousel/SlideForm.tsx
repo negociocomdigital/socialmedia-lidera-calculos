@@ -2,7 +2,7 @@ import type { CarouselState } from "@/lib/carouselTypes";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, ImageIcon } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
 type Props = {
@@ -16,27 +16,7 @@ type Props = {
 
 export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, errorMessage }: Props) {
   const coverRef = useRef<HTMLInputElement>(null);
-  const logoRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-
-  const createWhiteLogo = async (file: File) => {
-    const bitmap = await createImageBitmap(file);
-    const canvas = document.createElement("canvas");
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Não foi possível preparar o logo branco.");
-    ctx.drawImage(bitmap, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      imageData.data[i] = 0;
-      imageData.data[i + 1] = 0;
-      imageData.data[i + 2] = 0;
-    }
-    ctx.putImageData(imageData, 0, 0);
-    bitmap.close();
-    return canvas.toDataURL("image/png");
-  };
 
   const onCoverFile = (file: File | undefined) => {
     if (!file) return;
@@ -44,16 +24,6 @@ export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, 
     setState((s) => {
       if (s.coverImage) URL.revokeObjectURL(s.coverImage);
       return { ...s, coverImage: url };
-    });
-  };
-
-  const onLogoFile = async (file: File | undefined) => {
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    const whiteLogo = await createWhiteLogo(file);
-    setState((s) => {
-      if (s.logo) URL.revokeObjectURL(s.logo);
-      return { ...s, logo: url, whiteLogo };
     });
   };
 
@@ -105,30 +75,6 @@ export function SlideForm({ state, setState, jsonText, setJsonText, onGenerate, 
               </button>
             );
           })}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Logo da empresa</Label>
-        <input
-          ref={logoRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => onLogoFile(e.target.files?.[0])}
-        />
-        <div className="flex items-center gap-3">
-          <Button type="button" variant="outline" size="sm" onClick={() => logoRef.current?.click()}>
-            <Upload />
-            {state.logo ? "Trocar logo" : "Enviar logo"}
-          </Button>
-          {state.logo && (
-            <img
-              src={state.logo}
-              alt="logo"
-              className="h-10 w-auto rounded bg-white object-contain p-1 ring-1 ring-border"
-            />
-          )}
         </div>
       </div>
 

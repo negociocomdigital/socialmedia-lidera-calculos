@@ -1,7 +1,15 @@
 import { forwardRef, type CSSProperties } from "react";
 import type { SlideData } from "@/lib/carouselTypes";
 
-export type SlideVariant = "cover" | "dark" | "light" | "cta" | "cta-dark";
+export type SlideVariant =
+  | "cover"
+  | "cover-light"
+  | "cover-gold"
+  | "dark"
+  | "light"
+  | "cta"
+  | "cta-dark"
+  | "cta-light";
 
 type Props = {
   index: number; // 0..4
@@ -10,7 +18,6 @@ type Props = {
   data: SlideData;
   coverImage?: string | null;
   logo?: string | null;
-  whiteLogo?: string | null;
   previewScale?: number;
 };
 
@@ -28,6 +35,10 @@ const colorsFor = (variant: SlideVariant) => {
   switch (variant) {
     case "cover":
       return { bg: "#0D1B3E", text: "#FFFFFF", muted: "rgba(255,255,255,0.75)", gold: "#C9A84C", decor: "#FFFFFF" };
+    case "cover-light":
+      return { bg: "#F7F5F0", text: "#0D1B3E", muted: "rgba(13,27,62,0.75)", gold: "#C9A84C", decor: "#0D1B3E" };
+    case "cover-gold":
+      return { bg: "#C9A84C", text: "#0D1B3E", muted: "rgba(13,27,62,0.8)", gold: "#0D1B3E", decor: "#0D1B3E" };
     case "dark":
       return { bg: "#0D1B3E", text: "#FFFFFF", muted: "rgba(255,255,255,0.75)", gold: "#C9A84C", decor: "#FFFFFF" };
     case "light":
@@ -36,21 +47,23 @@ const colorsFor = (variant: SlideVariant) => {
       return { bg: "#C9A84C", text: "#0D1B3E", muted: "rgba(13,27,62,0.8)", gold: "#0D1B3E", decor: "#0D1B3E" };
     case "cta-dark":
       return { bg: "#0D1B3E", text: "#FFFFFF", muted: "rgba(255,255,255,0.75)", gold: "#C9A84C", decor: "#FFFFFF" };
+    case "cta-light":
+      return { bg: "#F7F5F0", text: "#0D1B3E", muted: "rgba(13,27,62,0.7)", gold: "#C9A84C", decor: "#0D1B3E" };
   }
 };
 
 export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanvas(
-  { index, total, variant, data, coverImage, logo, whiteLogo, previewScale = 1 },
+  { index, total, variant, data, coverImage, logo, previewScale = 1 },
   ref,
 ) {
   const c = colorsFor(variant);
   const counter = `${String(index + 1).padStart(2, "0")}/${String(total).padStart(2, "0")}`;
   const decorativeNum = String(index + 1);
+  const isCover = variant === "cover" || variant === "cover-light" || variant === "cover-gold";
+  const isCta = variant === "cta" || variant === "cta-dark" || variant === "cta-light";
   const isDarkBackground = variant === "cover" || variant === "dark" || variant === "cta-dark";
+  const isGoldBg = variant === "cta" || variant === "cover-gold";
   const ctaText = data.cta ? (data.cta.includes("→") ? data.cta : `${data.cta} →`) : "";
-
-  const logoFilter = isDarkBackground ? "brightness(0) invert(1) brightness(2)" : variant === "cta" ? "brightness(0)" : "none";
-  const visibleLogo = isDarkBackground ? whiteLogo || logo : logo;
 
   const slideStyle = {
     width: W,
@@ -71,9 +84,37 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
     height: 90,
     width: "auto",
     opacity: 1,
-    filter: logoFilter,
     objectFit: "contain",
   } as CSSProperties;
+
+  const renderLogo = (extraStyle?: CSSProperties) => {
+    if (!logo) return null;
+    return (
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <img
+          src={logo}
+          alt="logo"
+          crossOrigin="anonymous"
+          style={{
+            ...logoStyle,
+            ...extraStyle,
+            display: isDarkBackground ? "none" : "block",
+          }}
+        />
+        <img
+          src={logo}
+          alt="logo"
+          crossOrigin="anonymous"
+          style={{
+            ...logoStyle,
+            ...extraStyle,
+            filter: "brightness(0) invert(1)",
+            display: isDarkBackground ? "block" : "none",
+          }}
+        />
+      </div>
+    );
+  };
 
   return (
     <div
@@ -82,7 +123,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
       style={slideStyle}
     >
       {/* Cover background image + overlay */}
-      {variant === "cover" && coverImage && (
+      {isCover && coverImage && (
         <>
           <div
             style={{
@@ -97,8 +138,11 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             style={{
               position: "absolute",
               inset: 0,
-              background:
-                "linear-gradient(180deg, rgba(13,27,62,0.75) 0%, rgba(13,27,62,0.75) 100%)",
+              background: isDarkBackground
+                ? "linear-gradient(180deg, rgba(13,27,62,0.75) 0%, rgba(13,27,62,0.75) 100%)"
+                : isGoldBg
+                  ? "linear-gradient(180deg, rgba(201,168,76,0.85) 0%, rgba(201,168,76,0.85) 100%)"
+                  : "linear-gradient(180deg, rgba(247,245,240,0.85) 0%, rgba(247,245,240,0.85) 100%)",
             }}
           />
         </>
@@ -150,18 +194,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             color: c.muted,
           }}
         >
-          {visibleLogo && variant !== "cta" ? (
-            <img
-              key={isDarkBackground ? "logo-white" : "logo-normal"}
-              src={visibleLogo}
-              alt="logo"
-              crossOrigin="anonymous"
-              data-logo-version={isDarkBackground ? "white" : "normal"}
-              style={logoStyle}
-            />
-          ) : (
-            <div />
-          )}
+          {!isCta ? renderLogo() : <div />}
           <div>{counter}</div>
         </div>
 
@@ -180,7 +213,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               {data.tag}
             </div>
           )}
-          <div style={{ width: 32, height: 2, backgroundColor: variant === "cta" ? "#0D1B3E" : "#C9A84C" }} />
+          <div style={{ width: 32, height: 2, backgroundColor: isGoldBg ? "#0D1B3E" : "#C9A84C" }} />
           <div
             style={{
               fontFamily: "var(--font-display)",
@@ -196,7 +229,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               <div
                 style={{
                   fontStyle: "italic",
-                  color: variant === "cta" ? "#0D1B3E" : "#C9A84C",
+                  color: isGoldBg ? "#0D1B3E" : "#C9A84C",
                   ...TEXT_STYLE,
                 }}
               >
@@ -209,7 +242,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               {data.body}
             </div>
           )}
-          {(variant === "cta" || variant === "cta-dark") && data.cta && (
+          {isCta && data.cta && (
             <div style={{ marginTop: 16 }}>
               <div
                 style={{
@@ -217,8 +250,8 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
                   width: "fit-content",
                   minWidth: "unset",
                   maxWidth: "fit-content",
-                  backgroundColor: variant === "cta-dark" ? "#C9A84C" : "#0D1B3E",
-                  color: variant === "cta-dark" ? "#0D1B3E" : "#FFFFFF",
+                  backgroundColor: variant === "cta" ? "#0D1B3E" : "#C9A84C",
+                  color: variant === "cta" ? "#FFFFFF" : "#0D1B3E",
                   padding: "12px 28px",
                   borderRadius: 999,
                   fontSize: 30,
@@ -250,13 +283,13 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
                 width: 10,
                 height: 10,
                 borderRadius: 999,
-                backgroundColor: variant === "cta" ? "#0D1B3E" : "#C9A84C",
+                backgroundColor: isGoldBg ? "#0D1B3E" : "#C9A84C",
                 display: "inline-block",
               }}
             />
             <div style={TEXT_STYLE}>Lidera Cálculos</div>
           </div>
-          {variant === "cover" && (
+          {isCover && (
             <div style={{ ...TEXT_STYLE, textTransform: "uppercase" }}>
               arraste →
             </div>
@@ -265,7 +298,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
       </div>
 
       {/* CTA: large centered logo at bottom */}
-      {(variant === "cta" || variant === "cta-dark") && logo && (
+      {isCta && logo && (
         <div
           style={{
             position: "absolute",
@@ -277,13 +310,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             pointerEvents: "none",
           }}
         >
-          <img
-            src={variant === "cta-dark" ? whiteLogo || logo : logo}
-            alt="logo"
-            crossOrigin="anonymous"
-            data-logo-version={variant === "cta-dark" ? "white" : "normal"}
-            style={{ ...logoStyle, filter: variant === "cta-dark" ? "brightness(0) invert(1) brightness(2)" : "brightness(0)" }}
-          />
+          {renderLogo()}
         </div>
       )}
     </div>
