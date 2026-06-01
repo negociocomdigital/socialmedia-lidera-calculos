@@ -83,7 +83,17 @@ function Index() {
     setExportingAll(true);
     setExportError(null);
     try {
-      await exportAllSlides("lidera-carrossel.zip");
+      const variants =
+        state.palette === "light" ? VARIANTS_LIGHT : state.palette === "gold" ? VARIANTS_GOLD : VARIANTS_DARK;
+      const configs = state.slides.map((data, i) => ({
+        index: i,
+        total: 5,
+        variant: variants[i],
+        data,
+        coverImage: i === 0 ? state.coverImage : null,
+        logo: state.logo,
+      }));
+      await exportAllSlides(configs, "lidera-carrossel.zip");
     } catch (err) {
       setExportError(err instanceof Error ? err.message : "Não foi possível exportar os slides.");
     } finally {
