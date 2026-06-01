@@ -14,31 +14,52 @@ async function capture(slideElement: HTMLElement): Promise<HTMLCanvasElement> {
   if (!slideElement) throw new Error("Slide não encontrado para exportação.");
   await document.fonts?.ready;
   const html2canvas = await getHtml2Canvas();
+
+  // Force fixed render size so html2canvas captures the full 1080x1440 slide
+  const originalWidth = slideElement.style.width;
+  const originalHeight = slideElement.style.height;
+  const originalTransform = slideElement.style.transform;
+  slideElement.style.width = "1080px";
+  slideElement.style.height = "1440px";
+  slideElement.style.transform = "none";
+  await new Promise((r) => setTimeout(r, 300));
+
   const options: Partial<Html2CanvasOptions> = {
-    scale: 2,
+    scale: 1,
     useCORS: true,
     allowTaint: true,
     backgroundColor: null,
-    width: slideElement.offsetWidth,
-    height: slideElement.offsetHeight,
+    width: 1080,
+    height: 1440,
+    windowWidth: 1080,
+    windowHeight: 1440,
     scrollX: 0,
     scrollY: 0,
     logging: false,
+    imageTimeout: 0,
     ignoreElements: (element) => element.tagName === "STYLE" || element.tagName === "LINK",
     onclone: (clonedDocument) => {
       clonedDocument.querySelectorAll("style, link[rel='stylesheet']").forEach((node) => node.remove());
-      const clonedSlide = clonedDocument.querySelector<HTMLElement>(".slide-preview");
-      if (clonedSlide) {
+      clonedDocument.querySelectorAll<HTMLElement>(".slide-preview").forEach((clonedSlide) => {
+        clonedSlide.style.width = "1080px";
+        clonedSlide.style.height = "1440px";
+        clonedSlide.style.transform = "none";
         clonedSlide.style.fontFamily = "'DM Sans', Arial, sans-serif";
         clonedSlide.querySelectorAll<HTMLElement>("*").forEach((node) => {
           const family = node.style.fontFamily;
           if (family.includes("var(--font-display)")) node.style.fontFamily = "'Playfair Display', Georgia, serif";
           if (family.includes("var(--font-sans-brand)")) node.style.fontFamily = "'DM Sans', Arial, sans-serif";
         });
-      }
+      });
     },
   };
-  return await html2canvas(slideElement, options);
+  try {
+    return await html2canvas(slideElement, options);
+  } finally {
+    slideElement.style.width = originalWidth;
+    slideElement.style.height = originalHeight;
+    slideElement.style.transform = originalTransform;
+  }
 }
 
 async function canvasToBlob(canvas: HTMLCanvasElement) {
