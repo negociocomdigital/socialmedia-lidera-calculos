@@ -5,6 +5,11 @@ const W = 1080;
 const H = 1440;
 const PAD = 40;
 const PAD_LEFT = 64;
+const TITLE_MAX_WIDTH = 880;
+const BODY_MAX_WIDTH = 820;
+const TOP_ROW_HEIGHT = 90;
+const FOOTER_HEIGHT = 28;
+const MIDDLE_GAP = 28;
 const FONT_DISPLAY = `"Playfair Display", Georgia, serif`;
 const FONT_SANS = `"DM Sans", ui-sans-serif, system-ui, sans-serif`;
 
@@ -92,21 +97,92 @@ function wrapText(
   maxWidth: number,
   lineHeight: number,
 ): number {
-  const words = text.split(/\s+/).filter(Boolean);
-  let line = "";
+  const lines = getWrappedLines(ctx, text, maxWidth);
   let curY = y;
-  for (let i = 0; i < words.length; i++) {
-    const test = line ? line + " " + words[i] : words[i];
-    if (ctx.measureText(test).width > maxWidth && line) {
-      ctx.fillText(line, x, curY);
-      line = words[i];
-      curY += lineHeight;
-    } else {
+  for (const line of lines) {
+    ctx.fillText(line, x, curY);
+    curY += lineHeight;
+  }
+  return curY;
+}
+
+function getWrappedLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width <= maxWidth) {
       line = test;
+      continue;
+    }
+    if (line) lines.push(line);
+    if (ctx.measureText(word).width <= maxWidth) {
+      line = word;
+    } else {
+      let chunk = "";
+      for (const char of Array.from(word)) {
+        const next = chunk + char;
+        if (ctx.measureText(next).width > maxWidth && chunk) {
+          lines.push(chunk);
+          chunk = char;
+        } else {
+          chunk = next;
+        }
+      }
+      line = chunk;
     }
   }
-  if (line) ctx.fillText(line, x, curY);
-  return curY + lineHeight;
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
+}
+
+function drawWrappedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+): number {
+  const lines = getWrappedLines(ctx, text, maxWidth);
+  let curY = y;
+  for (const line of lines) {
+    ctx.fillText(line, x, curY);
+    curY += lineHeight;
+  }
+  return curY;
+}
+
+function measureMiddleBlockHeight(ctx: CanvasRenderingContext2D, data: SlideData, isCta: boolean): number {
+  const titleLineH = 96 * 1.05;
+  const bodyLineH = 32 * 1.45;
+  const children: number[] = [];
+
+  if (data.tag) children.push(32);
+  children.push(2);
+
+  let titleHeight = 0;
+  ctx.font = `700 96px ${FONT_DISPLAY}`;
+  if (data.titleLine1) titleHeight += getWrappedLines(ctx, data.titleLine1, TITLE_MAX_WIDTH).length * titleLineH;
+  ctx.font = `italic 700 96px ${FONT_DISPLAY}`;
+  if (data.titleLine2) titleHeight += getWrappedLines(ctx, data.titleLine2, TITLE_MAX_WIDTH).length * titleLineH;
+  if (titleHeight) children.push(titleHeight);
+
+  ctx.font = `400 32px ${FONT_SANS}`;
+  if (data.body) children.push(getWrappedLines(ctx, data.body, BODY_MAX_WIDTH).length * bodyLineH);
+
+  if (isCta && data.cta) children.push(16 + 30 + 12 * 2);
+
+  const gaps = Math.max(0, children.length - 1) * MIDDLE_GAP;
+  return children.reduce((sum, height) => sum + height, 0) + gaps;
+}
+
+function getMiddleBlockY(ctx: CanvasRenderingContext2D, data: SlideData, isCta: boolean): number {
+  const innerHeight = H - PAD * 2;
+  const middleHeight = measureMiddleBlockHeight(ctx, data, isCta);
+  const freeSpace = innerHeight - TOP_ROW_HEIGHT - middleHeight - FOOTER_HEIGHT;
+  return PAD + TOP_ROW_HEIGHT + Math.max(0, freeSpace / 2);
 }
 
 async function ensureFontsReady() {
@@ -215,44 +291,42 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
   const counter = `${String(index + 1).padStart(2, "0")}/${String(total).padStart(2, "0")}`;
   ctx.fillText(counter.toUpperCase(), W - PAD, PAD + 45);
 
-  // 4. Middle block — position so it sits roughly centered
+  // 4. Middle block — same vertical distribution as the preview flex layout
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  let y = 560;
+  let y = getMiddleBlockY(ctx, data, isCta);
 
   if (data.tag) {
     ctx.font = `700 26px ${FONT_SANS}`;
     ctx.fillStyle = variant === "light" || variant === "cta" ? c.text : c.gold;
     ctx.fillText(data.tag.toUpperCase(), PAD_LEFT, y);
-    y += 32 + 28;
+    y += 32 + MIDDLE_GAP;
   }
 
   // Divider
   ctx.fillStyle = isGoldBg ? "#0D1B3E" : "#C9A84C";
   ctx.fillRect(PAD_LEFT, y, 32, 2);
-  y += 2 + 28;
+  y += 2 + MIDDLE_GAP;
 
   // Title
   const titleLineH = 96 * 1.05;
   if (data.titleLine1) {
     ctx.font = `700 96px ${FONT_DISPLAY}`;
     ctx.fillStyle = c.text;
-    ctx.fillText(data.titleLine1, PAD_LEFT, y);
-    y += titleLineH;
+    y = drawWrappedText(ctx, data.titleLine1, PAD_LEFT, y, TITLE_MAX_WIDTH, titleLineH);
   }
   if (data.titleLine2) {
     ctx.font = `italic 700 96px ${FONT_DISPLAY}`;
     ctx.fillStyle = isGoldBg ? "#0D1B3E" : "#C9A84C";
-    ctx.fillText(data.titleLine2, PAD_LEFT, y);
-    y += titleLineH;
+    y = drawWrappedText(ctx, data.titleLine2, PAD_LEFT, y, TITLE_MAX_WIDTH, titleLineH);
   }
-  y += 28;
+  y += MIDDLE_GAP;
 
   // Body
   if (data.body) {
     ctx.font = `400 32px ${FONT_SANS}`;
     ctx.fillStyle = c.muted;
-    y = wrapText(ctx, data.body, PAD_LEFT, y, 820, 32 * 1.45);
+    y = wrapText(ctx, data.body, PAD_LEFT, y, BODY_MAX_WIDTH, 32 * 1.45);
   }
 
   // CTA pill
