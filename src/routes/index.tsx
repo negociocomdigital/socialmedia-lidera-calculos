@@ -7,6 +7,7 @@ import { DEFAULT_STATE, type CarouselState, type SlideData } from "@/lib/carouse
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { exportAllSlides } from "@/lib/exportSlide";
+import logoAsset from "@/assets/logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,8 +22,8 @@ export const Route = createFileRoute("/")({
 });
 
 const VARIANTS_DARK: SlideVariant[] = ["cover", "light", "dark", "light", "cta"];
-const VARIANTS_LIGHT: SlideVariant[] = ["cover", "dark", "light", "dark", "cta"];
-const VARIANTS_GOLD: SlideVariant[] = ["cta", "dark", "light", "dark", "cta-dark"];
+const VARIANTS_LIGHT: SlideVariant[] = ["cover-light", "dark", "light", "dark", "cta"];
+const VARIANTS_GOLD: SlideVariant[] = ["cover-gold", "dark", "light", "dark", "cta-light"];
 
 const SAMPLE_JSON = JSON.stringify(
   {
@@ -94,12 +95,7 @@ function Index() {
     <div className="min-h-screen bg-[#F7F5F0] text-[#0D1B3E]">
       <header className="border-b border-black/10 bg-white/60 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-6 py-5">
-          <div className="flex items-center gap-3">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#C9A84C]" />
-            <span className="font-display text-xl font-bold tracking-tight">
-              Lidera <span className="italic text-[#C9A84C]">Cálculos</span>
-            </span>
-          </div>
+          <img src={logoAsset} alt="Lidera Cálculos" style={{ height: 36, width: "auto" }} />
           <span className="text-xs uppercase tracking-[0.25em] text-[#0D1B3E]/60">
             Gerador de Carrossel
           </span>
@@ -166,7 +162,6 @@ function Index() {
                 data={sl}
                 coverImage={i === 0 ? state.coverImage : null}
                 logo={state.logo}
-                whiteLogo={state.whiteLogo}
                 registerRef={(n) => {
                   slideRefs.current[i] = n;
                 }}
