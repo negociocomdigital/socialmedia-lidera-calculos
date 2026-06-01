@@ -6,16 +6,20 @@
 
 /* Brand tokens — Lidera Cálculos */
 :root {
-  --brand-dark: #0D1B3E;
-  --brand-light: #F7F5F0;
-  --brand-gold: #C9A84C;
-  --brand-white: #FFFFFF;
+  --brand-dark: #0d1b3e;
+  --brand-light: #f7f5f0;
+  --brand-gold: #c9a84c;
+  --brand-white: #ffffff;
   --font-display: "Playfair Display", Georgia, serif;
   --font-sans-brand: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-.font-display { font-family: var(--font-display); }
-.font-brand   { font-family: var(--font-sans-brand); }
+.font-display {
+  font-family: var(--font-display);
+}
+.font-brand {
+  font-family: var(--font-sans-brand);
+}
 
 .slide-preview {
   width: 1080px;
@@ -170,4 +174,20 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+}
+
+/* Ocultar Badge Lovable - CSS Seguro */
+iframe[src*="lovable"],
+[data-testid*="lovable"],
+[class*="lovable-badge"],
+[id*="lovable"],
+a[href*="lovable.app"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.lb-badge,
+.lovable-edit-btn,
+[data-lovable-widget] {
+  display: none !important;
 }
