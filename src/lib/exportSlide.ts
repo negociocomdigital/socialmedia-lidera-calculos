@@ -171,10 +171,10 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
   ctx.fillStyle = c.decor;
   ctx.font = `700 720px ${FONT_DISPLAY}`;
   ctx.textAlign = "right";
-  ctx.textBaseline = "alphabetic";
-  // right -40 from container right => baseline x = W + 40
-  // bottom -120 => baseline y = H + 120
-  ctx.fillText(String(index + 1), W + 40, H + 120);
+  ctx.textBaseline = "top";
+  // DOM: right: -40, bottom: -120, font-size 720, line-height 1
+  // => box right edge at x = W + 40, box top edge at y = H + 120 - 720 = H - 600
+  ctx.fillText(String(index + 1), W + 40, H - 600);
   ctx.restore();
   ctx.textBaseline = "top";
 
