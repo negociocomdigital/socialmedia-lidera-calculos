@@ -17,6 +17,22 @@
 .font-display { font-family: var(--font-display); }
 .font-brand   { font-family: var(--font-sans-brand); }
 
+.slide-preview {
+  width: 1080px;
+  height: 1440px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  transform: scale(var(--preview-scale, 1));
+  transform-origin: top left;
+}
+
+.slide-preview,
+.slide-preview * {
+  word-spacing: normal;
+  letter-spacing: normal;
+}
+
 /*
  * Design system definition.
  *
