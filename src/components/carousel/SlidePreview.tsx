@@ -20,6 +20,7 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
   const slideRef = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(0.4);
   const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -35,8 +36,13 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
   const onExport = async () => {
     if (!slideRef.current) return;
     setExporting(true);
+    setExportError(null);
     try {
-      await exportSlide(slideRef.current, `lidera-slide-${index + 1}.png`);
+      const slideElement = document.querySelectorAll<HTMLElement>(".slide-preview")[index];
+      if (!slideElement) throw new Error(`Slide ${index + 1} não encontrado.`);
+      await exportSlide(slideElement, `slide-0${index + 1}.png`);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Não foi possível exportar este slide.");
     } finally {
       setExporting(false);
     }
@@ -80,8 +86,9 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
         disabled={exporting}
       >
         <Download />
-        {exporting ? "Exportando..." : `Exportar slide ${index + 1}`}
+        {exporting ? "Gerando..." : `Exportar slide ${index + 1}`}
       </Button>
+      {exportError && <p className="text-sm font-medium text-red-600">{exportError}</p>}
     </div>
   );
 }
