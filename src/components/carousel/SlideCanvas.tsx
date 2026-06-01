@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, type CSSProperties } from "react";
 import type { SlideData } from "@/lib/carouselTypes";
 
 export type SlideVariant = "cover" | "dark" | "light" | "cta" | "cta-dark";
@@ -10,12 +10,19 @@ type Props = {
   data: SlideData;
   coverImage?: string | null;
   logo?: string | null;
+  whiteLogo?: string | null;
+  previewScale?: number;
 };
 
 const PAD = 40;
 const PAD_LEFT = 64;
 const W = 1080;
 const H = 1440;
+
+const TEXT_STYLE = {
+  letterSpacing: "normal",
+  wordSpacing: "normal",
+} as const;
 
 const colorsFor = (variant: SlideVariant) => {
   switch (variant) {
@@ -33,33 +40,46 @@ const colorsFor = (variant: SlideVariant) => {
 };
 
 export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanvas(
-  { index, total, variant, data, coverImage, logo },
+  { index, total, variant, data, coverImage, logo, whiteLogo, previewScale = 1 },
   ref,
 ) {
   const c = colorsFor(variant);
   const counter = `${String(index + 1).padStart(2, "0")}/${String(total).padStart(2, "0")}`;
   const decorativeNum = String(index + 1);
+  const isDarkBackground = variant === "cover" || variant === "dark" || variant === "cta-dark";
+  const ctaText = data.cta ? (data.cta.includes("→") ? data.cta : `${data.cta} →`) : "";
 
-  const logoFilter =
-    variant === "cta"
-      ? "brightness(0)"
-      : variant === "light"
-        ? "none"
-        : "brightness(0) invert(1)";
+  const logoFilter = isDarkBackground ? "brightness(0) invert(1) brightness(2)" : variant === "cta" ? "brightness(0)" : "none";
+  const visibleLogo = isDarkBackground ? whiteLogo || logo : logo;
+
+  const slideStyle = {
+    width: W,
+    height: H,
+    position: "relative",
+    backgroundColor: c.bg,
+    color: c.text,
+    overflow: "hidden",
+    flexShrink: 0,
+    fontFamily: "var(--font-sans-brand)",
+    "--preview-scale": previewScale,
+    transform: "scale(var(--preview-scale))",
+    transformOrigin: "top left",
+    ...TEXT_STYLE,
+  } as CSSProperties;
+
+  const logoStyle = {
+    height: 90,
+    width: "auto",
+    opacity: 1,
+    filter: logoFilter,
+    objectFit: "contain",
+  } as CSSProperties;
 
   return (
     <div
       ref={ref}
       className="slide-preview"
-      style={{
-        width: W,
-        height: H,
-        position: "relative",
-        backgroundColor: c.bg,
-        color: c.text,
-        overflow: "hidden",
-        fontFamily: "var(--font-sans-brand)",
-      }}
+      style={slideStyle}
     >
       {/* Cover background image + overlay */}
       {variant === "cover" && coverImage && (
@@ -98,6 +118,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
           opacity: 0.08,
           pointerEvents: "none",
           userSelect: "none",
+          ...TEXT_STYLE,
         }}
       >
         {decorativeNum}
@@ -124,22 +145,24 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             justifyContent: "space-between",
             alignItems: "center",
             fontSize: 22,
-            letterSpacing: "0.2em",
+            ...TEXT_STYLE,
             textTransform: "uppercase",
             color: c.muted,
           }}
         >
-          {logo && variant !== "cta" ? (
+          {visibleLogo && variant !== "cta" ? (
             <img
-              src={logo}
+              key={isDarkBackground ? "logo-white" : "logo-normal"}
+              src={visibleLogo}
               alt="logo"
               crossOrigin="anonymous"
-              style={{ height: 90, width: "auto", opacity: 1, filter: logoFilter, objectFit: "contain" }}
+              data-logo-version={isDarkBackground ? "white" : "normal"}
+              style={logoStyle}
             />
           ) : (
-            <span />
+            <div />
           )}
-          <span>{counter}</span>
+          <div>{counter}</div>
         </div>
 
         {/* Middle block: tag, divider, title, body, optional CTA */}
@@ -149,7 +172,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               style={{
                 fontSize: 26,
                 fontWeight: 700,
-                letterSpacing: "0.1em",
+                ...TEXT_STYLE,
                 textTransform: "uppercase",
                 color: variant === "light" || variant === "cta" ? c.text : c.gold,
               }}
@@ -165,6 +188,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
               fontSize: 96,
               lineHeight: 1.05,
               color: c.text,
+              ...TEXT_STYLE,
             }}
           >
             {data.titleLine1 && <div>{data.titleLine1}</div>}
@@ -173,6 +197,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
                 style={{
                   fontStyle: "italic",
                   color: variant === "cta" ? "#0D1B3E" : "#C9A84C",
+                  ...TEXT_STYLE,
                 }}
               >
                 {data.titleLine2}
@@ -180,29 +205,30 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             )}
           </div>
           {data.body && (
-            <div style={{ fontSize: 32, lineHeight: 1.45, color: c.muted, maxWidth: 820 }}>
+            <div style={{ fontSize: 32, lineHeight: 1.45, color: c.muted, maxWidth: 820, ...TEXT_STYLE }}>
               {data.body}
             </div>
           )}
           {(variant === "cta" || variant === "cta-dark") && data.cta && (
             <div style={{ marginTop: 16 }}>
-              <span
+              <div
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 18,
+                  display: "inline-block",
+                  width: "fit-content",
+                  minWidth: "unset",
+                  maxWidth: "fit-content",
                   backgroundColor: variant === "cta-dark" ? "#C9A84C" : "#0D1B3E",
                   color: variant === "cta-dark" ? "#0D1B3E" : "#FFFFFF",
-                  padding: "26px 44px",
+                  padding: "12px 28px",
                   borderRadius: 999,
                   fontSize: 30,
                   fontWeight: 500,
-                  letterSpacing: "0.02em",
+                  whiteSpace: "nowrap",
+                  ...TEXT_STYLE,
                 }}
               >
-                {data.cta}
-                <span style={{ color: variant === "cta-dark" ? "#0D1B3E" : "#C9A84C", fontSize: 32, lineHeight: 1 }}>→</span>
-              </span>
+                {ctaText}
+              </div>
             </div>
           )}
         </div>
@@ -215,10 +241,11 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
             alignItems: "center",
             fontSize: 24,
             color: c.muted,
+            ...TEXT_STYLE,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <span
+            <div
               style={{
                 width: 10,
                 height: 10,
@@ -227,12 +254,12 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
                 display: "inline-block",
               }}
             />
-            <span style={{ letterSpacing: "0.05em" }}>Lidera Cálculos</span>
+            <div style={TEXT_STYLE}>Lidera Cálculos</div>
           </div>
           {variant === "cover" && (
-            <span style={{ letterSpacing: "0.15em", textTransform: "uppercase" }}>
+            <div style={{ ...TEXT_STYLE, textTransform: "uppercase" }}>
               arraste →
-            </span>
+            </div>
           )}
         </div>
       </div>
@@ -251,10 +278,11 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
           }}
         >
           <img
-            src={logo}
+            src={variant === "cta-dark" ? whiteLogo || logo : logo}
             alt="logo"
             crossOrigin="anonymous"
-            style={{ height: 90, width: "auto", opacity: 1, filter: variant === "cta-dark" ? "brightness(0) invert(1)" : "brightness(0)", objectFit: "contain" }}
+            data-logo-version={variant === "cta-dark" ? "white" : "normal"}
+            style={{ ...logoStyle, filter: variant === "cta-dark" ? "brightness(0) invert(1) brightness(2)" : "brightness(0)" }}
           />
         </div>
       )}

@@ -12,10 +12,11 @@ type Props = {
   data: SlideData;
   coverImage?: string | null;
   logo?: string | null;
+  whiteLogo?: string | null;
   registerRef: (node: HTMLDivElement | null) => void;
 };
 
-export function SlidePreview({ index, total, variant, data, coverImage, logo, registerRef }: Props) {
+export function SlidePreview({ index, total, variant, data, coverImage, logo, whiteLogo, registerRef }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const slideRef = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(0.4);
@@ -59,8 +60,6 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
           style={{
             width: SLIDE_WIDTH,
             height: SLIDE_HEIGHT,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
           }}
         >
           <SlideCanvas
@@ -74,6 +73,8 @@ export function SlidePreview({ index, total, variant, data, coverImage, logo, re
             data={data}
             coverImage={coverImage}
             logo={logo}
+            whiteLogo={whiteLogo}
+            previewScale={scale}
           />
         </div>
       </div>
