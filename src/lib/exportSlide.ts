@@ -5,6 +5,8 @@ const W = 1080;
 const H = 1440;
 const PAD = 40;
 const PAD_LEFT = 64;
+const PAD_TOP = 110;
+const PAD_BOTTOM = 110;
 const TITLE_MAX_WIDTH = 880;
 const BODY_MAX_WIDTH = 820;
 const TOP_ROW_HEIGHT = 90;
@@ -179,10 +181,10 @@ function measureMiddleBlockHeight(ctx: CanvasRenderingContext2D, data: SlideData
 }
 
 function getMiddleBlockY(ctx: CanvasRenderingContext2D, data: SlideData, isCta: boolean): number {
-  const innerHeight = H - PAD * 2;
+  const innerHeight = H - PAD_TOP - PAD_BOTTOM;
   const middleHeight = measureMiddleBlockHeight(ctx, data, isCta);
   const freeSpace = innerHeight - TOP_ROW_HEIGHT - middleHeight - FOOTER_HEIGHT;
-  return PAD + TOP_ROW_HEIGHT + Math.max(0, freeSpace / 2);
+  return PAD_TOP + TOP_ROW_HEIGHT + Math.max(0, freeSpace / 2);
 }
 
 async function ensureFontsReady() {
@@ -250,7 +252,7 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
   ctx.textBaseline = "top";
   // DOM: right: -40, bottom: -120, font-size 720, line-height 1
   // => box right edge at x = W + 40, box top edge at y = H + 120 - 720 = H - 600
-  ctx.fillText(String(index + 1), W + 40, H - 600);
+  ctx.fillText(String(index + 1), W + 40, H - 660);
   ctx.restore();
   ctx.textBaseline = "top";
 
@@ -282,14 +284,14 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
 
   // 3. Top row: logo (left, not for CTA) + counter (right)
   if (!isCta) {
-    drawLogo(PAD_LEFT, PAD, 90);
+    drawLogo(PAD_LEFT, PAD_TOP, 90);
   }
   ctx.font = `400 22px ${FONT_SANS}`;
   ctx.fillStyle = c.muted;
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
   const counter = `${String(index + 1).padStart(2, "0")}/${String(total).padStart(2, "0")}`;
-  ctx.fillText(counter.toUpperCase(), W - PAD, PAD + 45);
+  ctx.fillText(counter.toUpperCase(), W - PAD, PAD_TOP + 45);
 
   // 4. Middle block — same vertical distribution as the preview flex layout
   ctx.textAlign = "left";
@@ -359,11 +361,11 @@ export async function renderSlideToCanvas(cfg: RenderConfig): Promise<HTMLCanvas
 
   // 5. CTA: big centered logo near bottom
   if (isCta && logoImg) {
-    drawLogo(W / 2, H - PAD - 60 - 90, 90, "center");
+    drawLogo(W / 2, H - PAD_BOTTOM - 60 - 90, 90, "center");
   }
 
   // 6. Footer
-  const footerY = H - PAD - 12;
+  const footerY = H - PAD_BOTTOM - 12;
   // Left: dot + "Lidera Cálculos"
   ctx.fillStyle = isGoldBg ? "#0D1B3E" : "#C9A84C";
   ctx.beginPath();
