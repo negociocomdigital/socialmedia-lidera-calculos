@@ -23,6 +23,8 @@ type Props = {
 
 const PAD = 40;
 const PAD_LEFT = 64;
+const PAD_TOP = 110;
+const PAD_BOTTOM = 110;
 const W = 1080;
 const H = 1440;
 const TITLE_MAX_WIDTH = 880;
@@ -169,7 +171,7 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
         style={{
           position: "absolute",
           right: -40,
-          bottom: -120,
+          bottom: -60,
           fontFamily: "var(--font-display)",
           fontWeight: 700,
           fontSize: 720,
@@ -189,9 +191,9 @@ export const SlideCanvas = forwardRef<HTMLDivElement, Props>(function SlideCanva
         style={{
           position: "absolute",
           inset: 0,
-          paddingTop: PAD,
+          paddingTop: PAD_TOP,
           paddingRight: PAD,
-          paddingBottom: PAD,
+          paddingBottom: PAD_BOTTOM,
           paddingLeft: PAD_LEFT,
           display: "flex",
           flexDirection: "column",
