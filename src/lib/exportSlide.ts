@@ -181,10 +181,10 @@ function measureMiddleBlockHeight(ctx: CanvasRenderingContext2D, data: SlideData
 }
 
 function getMiddleBlockY(ctx: CanvasRenderingContext2D, data: SlideData, isCta: boolean): number {
-  const innerHeight = H - PAD * 2;
+  const innerHeight = H - PAD_TOP - PAD_BOTTOM;
   const middleHeight = measureMiddleBlockHeight(ctx, data, isCta);
   const freeSpace = innerHeight - TOP_ROW_HEIGHT - middleHeight - FOOTER_HEIGHT;
-  return PAD + TOP_ROW_HEIGHT + Math.max(0, freeSpace / 2);
+  return PAD_TOP + TOP_ROW_HEIGHT + Math.max(0, freeSpace / 2);
 }
 
 async function ensureFontsReady() {
